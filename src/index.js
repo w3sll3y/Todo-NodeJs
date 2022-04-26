@@ -96,14 +96,47 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
     return response.status(200).json({success: "Todo updated"})
   }
 
+  return response.send({error: "Todo not found!"})
+
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const user = users.find((user) => user.username === username);
+
+  const todoToAlter = user.todos.filter((todo) => todo.id == id);
+
+  if(todoToAlter[0].done == false) {
+    todoToAlter[0].done = true
+    return response.status(200).json(todoToAlter)
+  }
+
+  if(todoToAlter[0].done == true) {
+    todoToAlter[0].done = false
+    return response.status(200).json(todoToAlter)
+  }
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const user = users.find((user) => user.username === username);
+
+  const todoToRemove = user.todos.filter((todo) => todo.id == id);
+
+  if(todoToRemove) {
+    user.todos.splice(user.todos.findIndex(function(remove){
+      return remove.id === todoToRemove[0].id
+    }), 1)
+    return response.status(200).json(user.todos)
+  } 
+  if(!todoToRemove) {
+    return response.json({ error: "Todo not found!"})
+  }  
+
 });
 
 module.exports = app;
